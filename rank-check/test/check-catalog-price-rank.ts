@@ -18,7 +18,7 @@ const KEYWORD = '갤럭시s25';
 const CATALOG_NVMID = '52628743955'; // 검색 결과에서 클릭할 캐탈로그
 const TARGET_PRODUCT_ID = '11829749361'; // smartstore.naver.com/seolbin/products/11829749361
 
-const SAFE_DELAY_MS = 1500;
+const SAFE_DELAY_MS = 800;
 
 function getProfilePath(): string {
   const p = path.join(os.tmpdir(), 'prb-catalog-price-rank');
@@ -53,9 +53,8 @@ async function main() {
 
     // ─── 1. 네이버 메인 진입 ───
     console.log('🧭 네이버 메인 진입');
-    await page.goto('https://www.naver.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
-    // 페이지 안정화 + "읽는" 시간
-    await delay(2500 + Math.random() * 2500); // 2.5~5초
+    await page.goto('https://www.naver.com/', { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await delay(1000 + Math.random() * 800);
 
     // ─── 2. 검색창 인간형 클릭 후 키워드 입력 ───
     const searchRect = await page.evaluate(() => {
@@ -68,24 +67,21 @@ async function main() {
       console.log('❌ 검색 입력창 없음');
       return;
     }
-    await delay(400 + Math.random() * 500);
+    await delay(250 + Math.random() * 300);
     await humanClick(page, searchRect.x, searchRect.y);
-    await delay(600 + Math.random() * 600); // 포커스 후 타이핑 전 대기
+    await delay(350 + Math.random() * 350);
     await humanType(page, KEYWORD);
-    await delay(300 + Math.random() * 400);
+    await delay(200 + Math.random() * 200);
     await page.keyboard.press('Enter');
 
     console.log('⏳ 검색 결과 대기...');
     try {
-      await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 });
+      await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 12000 });
     } catch {}
-    await delay(2000 + Math.random() * 2000); // 2~4초
+    await delay(800 + Math.random() * 800);
 
-    // 봇 탐지 완화: 검색 결과 "읽는" 시간 길게 + 스크롤(훑기) 후 쇼핑탭 "워더→클릭"
-    const readingDelay = 3000 + Math.random() * 3000; // 3~6초
-    await delay(readingDelay);
-    await humanScroll(page, 180 + Math.random() * 220);
-    await delay(600 + Math.random() * 800);
+    await humanScroll(page, 120 + Math.random() * 150);
+    await delay(350 + Math.random() * 400);
 
     // ─── 3. 쇼핑탭 클릭 (워더 후 인간형 클릭) ───
     console.log('🛒 쇼핑탭 이동 (워더 후 클릭)');
@@ -100,25 +96,25 @@ async function main() {
         return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
       });
       if (!linkRect) {
-        await delay(2000);
+        await delay(1000);
         continue;
       }
-      await delay(500 + Math.random() * 700);
-      const navPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => null);
+      await delay(300 + Math.random() * 400);
+      const navPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null);
       try {
         await humanClickWithWander(page, linkRect.x, linkRect.y);
         clicked = true;
         await navPromise;
         break;
       } catch {
-        await delay(2000);
+        await delay(800);
       }
     }
     if (!clicked) {
       console.log('❌ 쇼핑탭 링크 없음');
       return;
     }
-    await delay(SAFE_DELAY_MS + 800);
+    await delay(SAFE_DELAY_MS + 400);
 
     if (!page.url().includes('search.shopping.naver.com')) {
       console.log('⚠️ 쇼핑탭 URL 미확인');
@@ -127,15 +123,12 @@ async function main() {
 
     // 상품 목록 로드 대기
     try {
-      await page.waitForSelector('[data-shp-contents-id]', { timeout: 15000 });
+      await page.waitForSelector('[data-shp-contents-id]', { timeout: 10000 });
     } catch {}
-    await delay(800 + Math.random() * 700);
+    await delay(400 + Math.random() * 400);
 
-    // 봇 탐지 완화: 쇼핑 결과 "훑는" 시간 길게 + 스크롤 후 캐탈로그 "워더→클릭"
-    const catalogReadingDelay = 3000 + Math.random() * 3000; // 3~6초
-    await delay(catalogReadingDelay);
-    await humanScroll(page, 220 + Math.random() * 280);
-    await delay(700 + Math.random() * 1000);
+    await humanScroll(page, 150 + Math.random() * 180);
+    await delay(400 + Math.random() * 500);
 
     // ─── 4. 캐탈로그(catalog/52628743955) 링크 워더 후 인간형 클릭 → 캐탈로그 페이지 진입 ───
     console.log('📂 캐탈로그 상품 클릭 진입 (워더 후 클릭)');
@@ -153,58 +146,112 @@ async function main() {
       return;
     }
 
-    await delay(500 + Math.random() * 800);
-    const catalogNavPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => null);
+    await delay(300 + Math.random() * 400);
+    const catalogNavPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null);
     try {
       await humanClickWithWander(page, catalogLinkRect.x, catalogLinkRect.y);
     } catch (e) {
       console.log('⚠️ 캐탈로그 클릭 실패:', (e as Error).message);
     }
     await catalogNavPromise;
-    await delay(2500 + Math.random() * 1500);
+    await delay(1000 + Math.random() * 500);
 
+    // 캐탈로그 URL 미확인 시 직접 이동 시도 (클릭 실패/다른 페이지 대비)
     if (!page.url().includes('catalog')) {
-      console.log('⚠️ 캐탈로그 페이지 URL 미확인:', page.url().substring(0, 60));
+      console.log('⚠️ 캐탈로그 미진입 → 직접 URL 이동');
+      await page.goto(`https://search.shopping.naver.com/catalog/${CATALOG_NVMID}`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 15000,
+      });
+      await delay(1500 + Math.random() * 500);
     }
 
-    // 가격비교 목록 로드 대기
-    try {
-      await page.waitForSelector('a[href*="/products/"]', { timeout: 12000 });
-    } catch {}
-    await delay(2000);
+    // 판매처 카드슬롯: 단계적 스크롤으로 lazy load 유도 (5단계)
+    console.log('📜 단계적 스크롤 → 판매처 카드슬롯 노출');
+    const doScrollAndExtract = async () => {
+      for (let i = 0; i < 5; i++) {
+        await page.evaluate(() => window.scrollBy(0, 500));
+        await delay(700 + Math.random() * 400);
+      }
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await delay(1500 + Math.random() * 800);
+    };
 
-    // ─── 5. 캐탈로그 페이지에서 가격비교 목록 수집 → 11829749361 순위 ───
-    // ul.productList_list_seller__MmlUy 내 각 li → a[data-shp-contents-dtl] 에서 chnl_prod_no·순위 추출
-    const rankResult = await page.evaluate((targetId: string) => {
-      window.scrollTo(0, document.body.scrollHeight);
-      const listUl = document.querySelector('ul.productList_list_seller__MmlUy') ?? document.querySelector('ul[class*="productList_list_seller"]');
-      const anchors = listUl
-        ? Array.from(listUl.querySelectorAll<HTMLAnchorElement>('li a[data-shp-contents-dtl]'))
-        : Array.from(document.querySelectorAll<HTMLAnchorElement>('a[data-shp-contents-dtl]'));
+    let rankResult: { rank: number | null; total: number; ids: string[] } = { rank: null, total: 0, ids: [] };
+    for (let retry = 0; retry < 3; retry++) {
+      try {
+        await doScrollAndExtract();
+        if (!page.url().includes('catalog')) {
+          console.log('⚠️ 스크롤 중 페이지 이탈 → 캐탈로그 재진입');
+          await page.goto(`https://search.shopping.naver.com/catalog/${CATALOG_NVMID}`, {
+            waitUntil: 'domcontentloaded',
+            timeout: 15000,
+          });
+          await delay(2000 + Math.random() * 500);
+          continue;
+        }
+        // ─── 5. 가격비교 목록 수집 → 순위 ───
+        rankResult = await page.evaluate((targetId: string) => {
+      const allProductItems = Array.from(document.querySelectorAll<HTMLAnchorElement>('.productList_list_seller__MmlUy li .productList_inner__UH7Oa .productList_product__Y0LS_ a[data-shp-contents-dtl]'));
+      let rank = null;
       const productIds: string[] = [];
-      let rank: number | null = null;
-      for (let i = 0; i < anchors.length; i++) {
-        const a = anchors[i];
-        const dtlRaw = a.getAttribute('data-shp-contents-dtl');
-        if (!dtlRaw) continue;
-        try {
-          const dtl = JSON.parse(dtlRaw) as { chnl_prod_no?: string };
-          const pid = dtl.chnl_prod_no != null ? String(dtl.chnl_prod_no) : '';
-          if (pid) productIds.push(pid);
-          if (pid === targetId) {
-            const rankAttr = a.getAttribute('data-shp-contents-rank');
-            rank = rankAttr != null ? parseInt(rankAttr, 10) : i + 1;
-            if (Number.isNaN(rank)) rank = i + 1;
-            break;
+      const seenProductIds = new Set<string>();
+
+      for (const item of allProductItems) {
+        const dataShpContentsDtl = item.getAttribute('data-shp-contents-dtl');
+        if (dataShpContentsDtl) {
+          try {
+            // HTML escape된 JSON 문자열을 unescape하고 파싱
+            const unescapedJsonString = dataShpContentsDtl.replace(/&quot;/g, '"');
+            const dtl = JSON.parse(unescapedJsonString);
+            const chnlProdNoEntry = dtl.find((entry: { key: string; value: string; }) => entry.key === 'chnl_prod_no');
+            
+            if (chnlProdNoEntry) {
+              const chnlProdNo = chnlProdNoEntry.value;
+              if (chnlProdNo && !seenProductIds.has(chnlProdNo)) {
+                seenProductIds.add(chnlProdNo);
+                productIds.push(chnlProdNo); // 순서 유지를 위해 배열에 추가
+                
+                if (chnlProdNo === targetId) {
+                  const rankAttr = item.getAttribute('data-shp-contents-rank');
+                  if (rankAttr) {
+                    rank = parseInt(rankAttr, 10);
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('JSON 파싱 오류:', e);
           }
-        } catch {
-          /* ignore parse error */
         }
       }
-      if (rank === null && productIds.length)
-        rank = productIds.indexOf(targetId) !== -1 ? productIds.indexOf(targetId) + 1 : null;
       return { rank, total: productIds.length, ids: productIds.slice(0, 25) };
-    }, TARGET_PRODUCT_ID);
+        }, TARGET_PRODUCT_ID);
+        break;
+      } catch (e: unknown) {
+        const msg = (e as Error).message || '';
+        if (msg.includes('Execution context was destroyed') || msg.includes('Target closed')) {
+          console.log(`⚠️ 실행 컨텍스트 손실 (재시도 ${retry + 1}/3)`);
+          await delay(1500 + Math.random() * 1000);
+          if (retry < 2) {
+            try {
+              const url = page.url();
+              if (!url.includes('catalog')) {
+                await page.goto(`https://search.shopping.naver.com/catalog/${CATALOG_NVMID}`, {
+                  waitUntil: 'domcontentloaded',
+                  timeout: 15000,
+                });
+              } else {
+                await page.reload({ waitUntil: 'domcontentloaded', timeout: 15000 });
+              }
+              await delay(2000);
+            } catch {}
+          }
+        } else {
+          throw e;
+        }
+      }
+    }
 
     if (rankResult.rank !== null) {
       console.log('\n✅ 가격비교 순위:', rankResult.rank, '위');
@@ -213,6 +260,20 @@ async function main() {
       console.log('\n❌ 해당 상품(ID:', TARGET_PRODUCT_ID, ')을 가격비교 목록에서 찾지 못함.');
       console.log('   수집된 /products/ 링크 수:', rankResult.total);
       if (rankResult.ids?.length) console.log('   상품 ID 샘플:', rankResult.ids.join(', '));
+      // 디버그: 페이지 실제 구조 확인
+      const debug = await page.evaluate(() => {
+        const all = document.querySelectorAll('a[href]');
+        const withProduct = Array.from(all).filter((a) => (a.getAttribute('href') || '').toLowerCase().includes('product'));
+        return {
+          url: location.href,
+          totalLinks: all.length,
+          linksWithProduct: withProduct.length,
+          sampleHrefs: withProduct.slice(0, 5).map((a) => (a.getAttribute('href') || '').substring(0, 80)),
+        };
+      });
+      console.log('   [디버그] URL:', debug.url);
+      console.log('   [디버그] 전체 <a> 수:', debug.totalLinks, '| products 포함 링크:', debug.linksWithProduct);
+      if (debug.sampleHrefs?.length) console.log('   [디버그] href 샘플:', debug.sampleHrefs);
     }
   } finally {
     await browser.close();
