@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title 네이버 쇼핑 순위 체크기 - 순위 체크 실행
+title 네이버 플레이스 순위 체크기
 
 echo ==================================================
-echo   네이버 쇼핑 순위 체크 실행
+echo   네이버 플레이스 순위 체크 실행
 echo ==================================================
 echo.
 
@@ -17,12 +17,11 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM .env 파일 확인
+REM .env 파일 확인 (선택)
 if not exist ".env" (
-    echo ⚠️  .env 파일이 없습니다.
+    echo ⚠️  .env 파일이 없습니다. (선택사항)
     echo    batch-scripts\setup.bat을 실행하여 설정하세요.
-    pause
-    exit /b 1
+    echo.
 )
 
 REM 로그 디렉토리 생성
@@ -42,15 +41,14 @@ for /f "tokens=1-2 delims=:. " %%a in ('time /t') do (
 set HOUR=%HOUR: =0%
 set MINUTE=%MINUTE: =0%
 set TIMESTAMP=%YEAR%%MONTH%%DAY%-%HOUR%%MINUTE%
-set LOG_FILE=rank-check-%TIMESTAMP%.log
+set LOG_FILE=place-check-%TIMESTAMP%.log
 
 echo 시작 시간: %date% %time%
 echo 로그 파일: batch-scripts\logs\%LOG_FILE%
 echo ==================================================
 echo.
 
-REM 화면 출력과 파일 저장 동시에 (간단한 방법)
-call npx tsx rank-check/batch/check-batch-worker-pool.ts %* 2>&1 | powershell -Command "$input | Tee-Object -FilePath 'batch-scripts\logs\%LOG_FILE%'"
+call npx tsx place-check/check-place-rank.ts %* 2>&1 | powershell -Command "$input | Tee-Object -FilePath 'batch-scripts\logs\%LOG_FILE%'"
 
 set EXIT_CODE=%errorlevel%
 
@@ -69,5 +67,3 @@ echo.
 
 pause
 exit /b %EXIT_CODE%
-
-

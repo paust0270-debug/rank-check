@@ -1,18 +1,16 @@
 {
-  "name": "naver-rank-checker",
+  "name": "naver-place-checker",
   "version": "1.0.0",
-  "description": "네이버 쇼핑 순위 체크 자동화 시스템",
+  "description": "네이버 플레이스 순위 체크 자동화 시스템",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "tsx rank-check/launcher/auto-update-launcher.ts",
-    "rank-check": "tsx rank-check/batch/check-batch-worker-pool.ts",
-    "test": "tsx rank-check/single/check-mid-rank-simple.ts",
-    "verify-window": "tsx rank-check/test/verify-rank-with-browser.ts"
+    "place": "tsx place-check/check-place-rank.ts",
+    "place-test": "tsx place-check/check-place-rank.ts"
   },
   "keywords": [
     "naver",
-    "shopping",
+    "place",
     "rank",
     "checker",
     "automation"
